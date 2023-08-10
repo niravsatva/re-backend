@@ -1,0 +1,76 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                           String        @id @default(uuid())
+  email                        String        @unique
+  firstName                    String?
+  lastName                     String?
+  phone                        String?
+  password                     String?
+  forgotPasswordToken          String?
+  isVerified                   Boolean       @default(false)
+  status                       Boolean       @default(false)
+  profileImg                   String?
+  companies                    CompanyRole[]
+  createdAt                    DateTime      @default(now())
+  updatedAt                    DateTime      @updatedAt
+}
+
+model Company {
+  id                 String        @id @default(uuid())
+  companyName         String?
+  users              CompanyRole[]
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+}
+
+model Role {
+  id              String        @id @default(uuid())
+  roleName        String
+  roleDescription String
+  isCompanyAdmin  Boolean       @default(false)
+  isAdminRole     Boolean       @default(false)
+  status          Boolean       @default(true)
+  users           CompanyRole[]
+  permissions     Permission[]
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+
+model CompanyRole {
+  id        String   @id @default(uuid())
+  user      User?    @relation(fields: [userId], references: [id])
+  userId    String?
+  role      Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  roleId    String
+  company   Company? @relation(fields: [companyId], references: [id])
+  companyId String?
+  status    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Permission {
+  id             String   @id @default(uuid())
+  permissionName String
+  all            Boolean  @default(false)
+  view           Boolean  @default(false)
+  edit           Boolean  @default(false)
+  delete         Boolean  @default(false)
+  add            Boolean  @default(false)
+  role           Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  roleId         String
+  sortId         Int
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
